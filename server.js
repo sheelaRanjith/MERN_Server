@@ -1,41 +1,23 @@
 const express = require("express");
-const dotenv = require("dotenv");
-const cors = require("cors");
 const path = require("path");
-const connectDB = require("./config/db");
-
-dotenv.config();
-
 const app = express();
-app.use(cors());
-app.use(express.json());
 
-// ----------------------
-// Connect to Database
-// ----------------------
-connectDB();
-
-// ----------------------
-// API Routes
-// ----------------------
+// Serve API routes
 app.use("/api/user", require("./routes/UserRoutes"));
 
-// ----------------------
-// Serve React build (Frontend)
-// ----------------------
+// Serve React build folder
 const clientBuildPath = path.join(__dirname, "../client/build");
+app.use(express.static(clientBuildPath));
 
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(clientBuildPath));
-
-  // SPA routing fix: use /* instead of *
-  app.get("/*", (req, res) => {
+// SPA fallback: serve index.html for unknown routes
+app.use((req, res, next) => {
+  // Only for GET requests (ignore API calls)
+  if (req.method === "GET" && !req.path.startsWith("/api")) {
     res.sendFile(path.join(clientBuildPath, "index.html"));
-  });
-}
+  } else {
+    next();
+  }
+});
 
-// ----------------------
-// Server Port
-// ----------------------
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
