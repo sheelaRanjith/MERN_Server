@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const path = require("path");       // <-- Added path
+const path = require("path");
 const connectDB = require("./config/db");
 
 dotenv.config();
@@ -25,12 +25,11 @@ app.use("/api/user", require("./routes/UserRoutes"));
 // ----------------------
 const clientBuildPath = path.join(__dirname, "../client/build");
 
-// Production-la build serve பண்ண
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(clientBuildPath));
 
-  // SPA routing: unknown routes return React index.html
-  app.get("*", (req, res) => {
+  // SPA routing fix: use /* instead of *
+  app.get("/*", (req, res) => {
     res.sendFile(path.join(clientBuildPath, "index.html"));
   });
 }
@@ -38,5 +37,5 @@ if (process.env.NODE_ENV === "production") {
 // ----------------------
 // Server Port
 // ----------------------
-const PORT = process.env.PORT ||10000;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
