@@ -1,27 +1,27 @@
 const express = require("express");
 const path = require("path");
 const dotenv = require("dotenv");
-const connectDB = require("./config/db"); // 👈 DB import
+const connectDB = require("./config/db");
 
-dotenv.config(); // 👈 env load
-connectDB();     // ✅ IMPORTANT (idhu missing before)
+dotenv.config();
+connectDB();
 
 const app = express();
-
-// Middleware
 app.use(express.json());
 
 // API routes
 app.use("/api/user", require("./routes/UserRoutes"));
 
-// Serve React build
+// React build
 const clientBuildPath = path.join(__dirname, "../client/build");
 app.use(express.static(clientBuildPath));
 
-// SPA fallback
-app.get("*", (req, res) => {
-  if (!req.path.startsWith("/api")) {
+// SPA fallback (FIXED)
+app.use((req, res, next) => {
+  if (req.method === "GET" && !req.path.startsWith("/api")) {
     res.sendFile(path.join(clientBuildPath, "index.html"));
+  } else {
+    next();
   }
 });
 
